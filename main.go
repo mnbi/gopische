@@ -6,27 +6,49 @@ import (
 	"os"
 )
 
-var printVersion bool
-var printUsage bool
+const ProgName = "gopische"
+const ProgDesc = "A tiny scheme implmentation written in Go"
+const ProgVersion = "0.1.0"
+const ProgRelease = "2024-11-06"
 
-func main() {
-	flag.BoolVar(&printVersion, "v", false, "print version")
-	flag.BoolVar(&printUsage, "h", false, "print usage")
-	flag.Parse()
-
-	if printVersion {
-		version()
-		os.Exit(1)
-	}
-
-	if printUsage {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	fmt.Println("Hello, world!")
+func usage() {
+	fmt.Fprintf(os.Stderr, "%s\n", ProgDesc)
+	fmt.Fprintf(os.Stderr, "usage: %s [options] [file]\n", ProgName)
+	flag.PrintDefaults()
+	os.Exit(2)
 }
 
 func version() {
-	fmt.Println("gopische version 0.1.0")
+	fmt.Fprintf(os.Stderr, "%s version %s (%s)\n", ProgName, ProgVersion, ProgRelease)
+	os.Exit(2)
+}
+
+var (
+	versionFlag = flag.Bool("v", false, "show version")
+	usageFlag   = flag.Bool("h", false, "show usage")
+)
+
+func main() {
+	flag.Usage = usage
+	flag.Parse()
+
+	if *versionFlag {
+		version()
+	}
+
+	if *usageFlag {
+		flag.Usage()
+	}
+
+	args := flag.Args()
+
+	if len(args) > 0 {
+		fmt.Fprintf(os.Stderr, "ARGS:")
+		for _, arg := range args {
+			fmt.Fprintf(os.Stderr, " %s", arg)
+		}
+		fmt.Fprintf(os.Stderr, "\n")
+	} else {
+		fmt.Printf("Hi!\n")
+	}
 }
