@@ -34,6 +34,6 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "\n")
 	} else {
-		fmt.Printf("Hi!\n")
+		gopische.Repl()
 	}
 }
