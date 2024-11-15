@@ -26,3 +26,6 @@ go.work.sum
 
 # executable of this package
 /gopische
+
+# sandbox to run some experimental code
+sandbox/
