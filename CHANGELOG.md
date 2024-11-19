@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Add simple lexer (#5)
 - Restructuring files and directories (#1)
 
 ## [0.0.0] - 2024-11-06

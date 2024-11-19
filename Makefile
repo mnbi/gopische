@@ -11,7 +11,7 @@ BUILD_LDFLAGS := " \
 
 .PHONY: test
 test:
-	go test ./..
+	go test ./...
 
 .PHONY: build
 build:
