@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Update version of the action, setup-go (#7)
 - Add simple lexer (#5)
 - Restructuring files and directories (#1)
 
