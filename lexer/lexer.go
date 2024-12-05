@@ -1,86 +1,94 @@
 package lexer
 
-type TokenType string
-
-type Token struct {
-	Type    TokenType
-	Literal string
-}
-
-const (
-	TT_ILLEGAL = "ILLEGAL"
-
-	TT_LPAREN = "LPAREN"
-	TT_RPAREN = "RPAREN"
-
-	TT_SYMBOL = "SYMBOL"
-	TT_NUMBER = "NUMBER"
-
-	TT_STRING = "STRING"
+import (
+	"github.com/mnbi/gopische/lexer/internal/runeclass"
+	"github.com/mnbi/gopische/lexer/internal/wscanner"
+	"github.com/mnbi/gopische/token"
 )
 
 type Lexer struct {
-	Tokens []Token
-	Cursor int
-	Input  string
+	tokens []token.Token
+	cursor int
+	input  string
 }
 
 func NewLexer(input string) *Lexer {
-	lexer := Lexer{Input: input}
+	// The number of tokens is less than the number of runes in input.
+	cap := len([]rune(input))
+	lexer := Lexer{tokens: make([]token.Token, 0, cap), input: input}
 	if ok := lexer.analyze(); !ok {
 		return nil
 	}
 	return &lexer
 }
 
+func (l *Lexer) Length() int {
+	return len(l.tokens)
+}
+
+// Returns a next token to be read and true when tokens stil
+// remain. When all tokens have been already read, returns 0 valuen
+// and false.
+func (l *Lexer) NextToken() (tk token.Token, ok bool) {
+	if l.cursor < len(l.tokens) {
+		tk = l.tokens[l.cursor]
+		ok = true
+		l.cursor++
+	}
+	return tk, ok
+}
+
 func (l *Lexer) analyze() bool {
-	scanner := newScanner(l.Input)
+	wordScanner := wscanner.NewWordScanner(l.input)
 
 	var word string
 	var ok bool
 
 	for {
-		word = scanner.nextWord()
-		if word == "" {
+		word = wordScanner.NextWord()
+		if word == "" { // eos
 			ok = true
 			break
 		}
-		l.Tokens = append(l.Tokens, Token{Type: tokenType(word), Literal: word})
+		if tk, err := token.NewToken(tokenType(word), word); err == nil {
+			l.tokens = append(l.tokens, tk)
+		}
 	}
 	return ok
 }
 
-func tokenType(literal string) (tt TokenType) {
+func tokenType(literal string) (tt token.TokenType) {
 	runes := []rune(literal)
+	if len(runes) < 1 {
+		tt = token.ILLEGAL
+		return
+	}
+
 	switch runes[0] {
 	case '(':
-		tt = TT_LPAREN
+		tt = token.LPAREN
 	case ')':
-		tt = TT_RPAREN
+		tt = token.RPAREN
 	case '"':
-		tt = TT_STRING
+		tt = token.STRING
 	case '+', '-':
-		if len(runes) > 1 && IsDigit(runes[1]) && readNumber(literal[1:]) {
-			tt = TT_NUMBER
-		} else {
-			tt = TT_SYMBOL
+		tt = token.SYMBOL
+		if len(runes) > 1 && (runeclass.IsDigit(runes[1]) || runes[1] == '.') {
+			tt = token.NUMBER
+		}
+	case '.':
+		if len(runes) == 1 {
+			tt = token.ILLEGAL
+		}
+		if runeclass.IsDigit(runes[1]) {
+			tt = token.NUMBER
 		}
 	default:
-		if IsDigit(runes[0]) && readNumber(literal) {
-			tt = TT_NUMBER
+		if runeclass.IsDigit(runes[0]) {
+			tt = token.NUMBER
 		} else {
-			tt = TT_SYMBOL
+			tt = token.SYMBOL
 		}
 	}
 	return
-}
-
-func readNumber(literal string) bool {
-	runes := []rune(literal)
-	for _, r := range runes {
-		if !IsDigit(r) {
-			return false
-		}
-	}
-	return true
 }
