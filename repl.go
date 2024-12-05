@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mnbi/gopische/lexer"
+	"github.com/mnbi/gopische/token"
 )
 
 func log(msg string) {
@@ -68,7 +69,7 @@ func read(input string) (string, bool) {
 		log(msg)
 		return "", false
 	}
-	return parse(l.Tokens), true
+	return parse(l), true
 }
 
 func eval(exp string) string {
@@ -80,14 +81,17 @@ func print(writer *bufio.Writer, value string) {
 	writeString(writer, answerLine)
 }
 
-func parse(tokens []lexer.Token) string {
-	var output string
-	tokenStrings := make([]string, 0, len(tokens))
-	for _, tk := range tokens {
-		tokenStrings = append(tokenStrings, fmt.Sprintf("[%s (%s)]", tk.Type, tk.Literal))
+func parse(l *lexer.Lexer) string {
+	var ok bool
+	var tk token.Token
+
+	tokenStrings := make([]string, 0, l.Length())
+	for {
+		if tk, ok = l.NextToken(); !ok { // no more tokens
+			break
+		}
+		tokenStrings = append(tokenStrings, tk.String())
 	}
 
-	output = strings.Join(tokenStrings, ",\n")
-
-	return output
+	return strings.Join(tokenStrings, ",\n")
 }

@@ -1,6 +1,6 @@
-// lexer/scanner_test.go
+// lexer/internal/wscanner/wordscanner_test.go
 
-package lexer
+package wscanner
 
 import (
 	"testing"
@@ -19,9 +19,9 @@ func cmpWords(expected []string, actual []string) bool {
 	return true
 }
 
-func readAllWords(s *scanner) (words []string) {
+func readAllWords(s *WordScanner) (words []string) {
 	for {
-		word := s.nextWord()
+		word := s.NextWord()
 		if word == "" {
 			break
 		}
@@ -48,7 +48,7 @@ func TestNextWord(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		s := newScanner(tc.testcase)
+		s := NewWordScanner(tc.testcase)
 		if s == nil {
 			t.Fatalf("tests[%d] - fail to instantiate a scanner for \"%s\"",
 				tc.id, tc.testcase)
