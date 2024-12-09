@@ -14,7 +14,7 @@ func TestNewSchemeObjectNil(t *testing.T) {
 	}{NIL, nil}
 	expected := Tag(NIL)
 
-	sobj, err := CreateSchemeObject(testcase.tag, testcase.value)
+	sobj, err := NewSchemeObject(testcase.tag, testcase.value)
 	if err != nil {
 		t.Fatalf("tests[%d] - fail to create a scheme object, expected=%v",
 			id, expected)
@@ -56,7 +56,7 @@ func TestNewSchemeObject(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		sobj, err := CreateSchemeObject(tc.testcase.tag, tc.testcase.value)
+		sobj, err := NewSchemeObject(tc.testcase.tag, tc.testcase.value)
 		if err != nil {
 			t.Fatalf("tests[%d] - fail to create a scheme object, expected=%v",
 				tc.id, tc.expected)
