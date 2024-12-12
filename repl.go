@@ -83,7 +83,7 @@ func print(writer *bufio.Writer, value string) {
 
 func parse(l *lexer.Lexer) string {
 	var ok bool
-	var tk token.Token
+	var tk *token.Token
 
 	tokenStrings := make([]string, 0, l.Length())
 	for {

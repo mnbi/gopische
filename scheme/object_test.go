@@ -67,3 +67,42 @@ func TestNewSchemeObject(t *testing.T) {
 		}
 	}
 }
+
+func TestStringer(t *testing.T) {
+	type obj struct {
+		tag   Tag
+		value any
+	}
+
+	tests := []struct {
+		id       int
+		testcase obj
+		expected string
+	}{
+		{301, obj{NIL, 0}, "()"},
+		{302, obj{BOOLEAN, false}, "#f"},
+		{303, obj{BOOLEAN, true}, "#t"},
+		{304, obj{STRING, "hoge"}, "\"hoge\""},
+		{305, obj{SYMBOL, "foo"}, "foo"},
+		{310, obj{NUMBER, 0}, "0"},
+		{311, obj{NUMBER, -1}, "-1"},
+		{312, obj{NUMBER, 3.14}, "3.14"},
+		{313, obj{NUMBER, -1.41}, "-1.41"},
+		{314, obj{NUMBER, +1.41}, "1.41"},
+		{320, obj{NUMBER, 0 + 0i}, "(0+0i)"},
+		{321, obj{NUMBER, 1 + 0i}, "(1+0i)"},
+		{322, obj{NUMBER, 0.0 + 1i}, "(0+1i)"},
+	}
+
+	for _, tc := range tests {
+		sobj, err := NewSchemeObject(tc.testcase.tag, tc.testcase.value)
+		if err != nil {
+			t.Fatalf("tests[%d] - fail to create a scheme object, expected=%v",
+				tc.id, tc.expected)
+		}
+		str := sobj.String()
+		if tc.expected != str {
+			t.Fatalf("tests[%d] - wrong stringer for a scheme object, expected=%v, got=%v", tc.id, tc.expected, str)
+		}
+	}
+}

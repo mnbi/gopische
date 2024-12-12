@@ -39,10 +39,17 @@ type Object interface {
 	// Following method is used to implement Scheme predicates for
 	// adata object.
 	IsClass(bits Class) bool
+
+	String() string
 }
 
 // Nil object
 type Nil struct{}
+
+var nilObject = &Nil{}
+
+// Empty list (aka nil) should be a singleton.
+var EmptyList = nilObject
 
 func (sobj *Nil) Tag() Tag {
 	return Tag(NIL)
@@ -58,6 +65,10 @@ func (sobj *Nil) Value() any {
 
 func (sobj *Nil) IsClass(bits Class) bool {
 	return bits == bitsNil()
+}
+
+func (sobj *Nil) String() string {
+	return fmt.Sprint("()")
 }
 
 // Boolean object
@@ -81,6 +92,14 @@ func (sobj *Boolean) IsClass(bits Class) bool {
 	return bits == bitsBoolean()
 }
 
+func (sobj *Boolean) String() string {
+	if sobj.value {
+		return fmt.Sprint("#t")
+	} else {
+		return fmt.Sprint("#f")
+	}
+}
+
 // String object
 type String struct {
 	value string
@@ -102,6 +121,10 @@ func (sobj *String) IsClass(bits Class) bool {
 	return bits == bitsString()
 }
 
+func (sobj *String) String() string {
+	return fmt.Sprintf("\"%s\"", sobj.value)
+}
+
 // Symbol object
 type Symbol struct {
 	value string
@@ -121,6 +144,10 @@ func (sobj *Symbol) Value() any {
 
 func (sobj *Symbol) IsClass(bits Class) bool {
 	return bits == bitsSymbol()
+}
+
+func (sobj *Symbol) String() string {
+	return sobj.value
 }
 
 // Number object
@@ -145,6 +172,21 @@ func (sobj *Number) IsClass(bits Class) bool {
 	return bits == bitsNumber()
 }
 
+func (sobj *Number) String() (str string) {
+	switch sobj.value.(type) {
+	case int64:
+		iv := sobj.value.(int64)
+		str = fmt.Sprintf("%d", iv)
+	case float64:
+		fv := sobj.value.(float64)
+		str = fmt.Sprintf("%g", fv)
+	case complex128:
+		cv := sobj.value.(complex128)
+		str = fmt.Sprintf("%g", cv)
+	}
+	return
+}
+
 // factory
 func NewSchemeObject(tag Tag, value any) (Object, error) {
 	var sobj Object
@@ -155,7 +197,7 @@ func NewSchemeObject(tag Tag, value any) (Object, error) {
 	switch tag {
 	case NIL:
 		ok = true
-		sobj = &Nil{}
+		sobj = EmptyList
 	case BOOLEAN:
 		var bv bool
 		if bv, ok = value.(bool); ok {
