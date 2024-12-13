@@ -120,9 +120,8 @@ func (l *Lexer) createToken(left int, right int) (tk *token.Token, err error) {
 			err = errors.New("weird literal")
 		}
 	case '"':
-		lit = string(l.input[left+1 : right-1]) // eliminate quotation marks
-		sobj, err = scheme.NewSchemeObject(scheme.STRING, lit)
-		if err == nil {
+		lit := string(l.input[left+1 : right-1]) // eliminate quotation marks
+		if sobj, err = scheme.NewSchemeObject(scheme.STRING, lit); err == nil {
 			tt = token.STRING
 		}
 	case '#':

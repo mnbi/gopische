@@ -14,11 +14,11 @@ const (
 	LPAREN     = "LPAREN"
 	RPAREN     = "RPAREN"
 	QUOTE      = "QUOTE"
-	NUMBER     = "NUMBER"
-	SYMBOL     = "SYMBOL"
-	STRING     = "STRING"
 	EMPTY_LIST = "EMPTY_LIST"
 	BOOLEAN    = "BOOLEAN"
+	NUMBER     = "NUMBER"
+	STRING     = "STRING"
+	SYMBOL     = "SYMBOL"
 	ILLEGAL    = "ILLEGAL"
 )
 
