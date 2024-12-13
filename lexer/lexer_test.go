@@ -32,6 +32,10 @@ func TestCreateToken(t *testing.T) {
 		{14, "\"Scheme is a programming language.\"", token.STRING},
 		{15, "++", token.SYMBOL},
 		{16, "()", token.EMPTY_LIST},
+		{17, "#t", token.BOOLEAN},
+		{18, "#f", token.BOOLEAN},
+		{19, "#true", token.BOOLEAN},
+		{20, "#false", token.BOOLEAN},
 	}
 
 	for _, tc := range tests {

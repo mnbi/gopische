@@ -3,17 +3,13 @@ package gopische
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/mnbi/gopische/lexer"
 	"github.com/mnbi/gopische/token"
 )
-
-func log(msg string) {
-	errMsg := fmt.Sprintf("%s\n", msg)
-	fmt.Fprintf(os.Stderr, errMsg)
-}
 
 func writeString(writer *bufio.Writer, str string) {
 	_, _ = writer.WriteString(str)
@@ -40,21 +36,22 @@ func Repl() int {
 	writer := bufio.NewWriter(os.Stdout)
 
 	welcome(writer)
-	prompt(writer)
 
 	var exp string
 	var ok bool
 
-	for scanner.Scan() {
-		firstLine := scanner.Text()
+	for {
+		prompt(writer)
 
+		if !scanner.Scan() {
+			break
+		}
+		firstLine := scanner.Text()
 		if exp, ok = read(firstLine); !ok {
 			continue
 		}
 
 		print(writer, eval(exp))
-
-		prompt(writer)
 	}
 
 	farewell(writer)
@@ -65,8 +62,7 @@ func Repl() int {
 func read(input string) (string, bool) {
 	l := lexer.NewLexer(input)
 	if l == nil {
-		msg := fmt.Sprintf("fail to analyze \"%s\"", input)
-		log(msg)
+		log.Printf("fail to analyze lexically: \"%s\"", input)
 		return "", false
 	}
 	return parse(l), true

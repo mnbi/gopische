@@ -2,6 +2,8 @@ package lexer
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/mnbi/gopische/lexer/internal/runeclass"
@@ -16,6 +18,9 @@ type Lexer struct {
 	input  []rune
 }
 
+// NewLexer accepts a string as a Scheme expression.  It analyzes the
+// input and converts it into a sequence of tokens.  If any error
+// ocurrs in the analysis, NewLexer returns nil.
 func NewLexer(input string) *Lexer {
 	runes := []rune(input)
 	// The number of tokens is less than the number of runes in input.
@@ -57,6 +62,9 @@ func (l *Lexer) analyze() bool {
 		}
 		if tk, err := l.createToken(leftPos, rightPos); err == nil {
 			l.tokens = append(l.tokens, tk)
+		} else {
+			log.Printf("fail to create token: %s\n", err)
+			return false
 		}
 	}
 	return ok
@@ -70,7 +78,7 @@ func (l *Lexer) createToken(left int, right int) (tk *token.Token, err error) {
 	length := right - left
 
 	if length < 1 {
-		tk = &token.Token{}
+		tk = token.NewIllegalToken(lit)
 		err = errors.New("empty literal")
 		return
 	}
@@ -98,7 +106,7 @@ func (l *Lexer) createToken(left int, right int) (tk *token.Token, err error) {
 			return &token.Token{}, err
 		}
 
-		tk, err = token.NewToken(tt, lit, sobj)
+		tk = token.NewToken(tt, lit, sobj)
 		return
 	}
 
@@ -116,6 +124,14 @@ func (l *Lexer) createToken(left int, right int) (tk *token.Token, err error) {
 		sobj, err = scheme.NewSchemeObject(scheme.STRING, lit)
 		if err == nil {
 			tt = token.STRING
+		}
+	case '#':
+		if nextRune == 't' || nextRune == 'f' {
+			if sobj, err = parseBoolean(lit); err == nil {
+				tt = token.BOOLEAN
+			}
+		} else {
+			tt = token.SYMBOL
 		}
 	case '+', '-':
 		if runeclass.IsDigit(nextRune) || nextRune == '.' {
@@ -156,10 +172,28 @@ func (l *Lexer) createToken(left int, right int) (tk *token.Token, err error) {
 	}
 
 	if err != nil {
-		return &token.Token{}, err
+		return token.NewIllegalToken(lit), err
 	}
 
-	tk, err = token.NewToken(tt, lit, sobj)
+	tk = token.NewToken(tt, lit, sobj)
+	return
+}
+
+func parseBoolean(lit string) (sobj scheme.Object, err error) {
+	var bv bool
+
+	switch lit {
+	case "#t", "#true":
+		bv = true
+	case "#f", "#false":
+		bv = false
+	default:
+		emsg := fmt.Sprintf("illegal boolean literal, %s", lit)
+		err = errors.New(emsg)
+		return
+	}
+
+	sobj, err = scheme.NewSchemeObject(scheme.BOOLEAN, bv)
 	return
 }
 

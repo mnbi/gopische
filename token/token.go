@@ -18,6 +18,7 @@ const (
 	SYMBOL     = "SYMBOL"
 	STRING     = "STRING"
 	EMPTY_LIST = "EMPTY_LIST"
+	BOOLEAN    = "BOOLEAN"
 	ILLEGAL    = "ILLEGAL"
 )
 
@@ -27,9 +28,12 @@ type Token struct {
 	Value     scheme.Object
 }
 
-func NewToken(t TokenType, l string, v scheme.Object) (tk *Token, err error) {
-	tk = &Token{TokenType: t, Literal: l, Value: v}
-	return
+func NewIllegalToken(lit string) *Token {
+	return NewToken(ILLEGAL, lit, scheme.EmptyList)
+}
+
+func NewToken(tt TokenType, lit string, val scheme.Object) *Token {
+	return &Token{TokenType: tt, Literal: lit, Value: val}
 }
 
 // Stringer interface for Token. The main purpose is to print token
