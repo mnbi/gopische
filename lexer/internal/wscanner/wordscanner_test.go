@@ -21,7 +21,8 @@ func cmpWords(expected []string, actual []string) bool {
 
 func readAllWords(s *WordScanner) (words []string) {
 	for {
-		word := s.NextWord()
+		l, r := s.NextWord()
+		word := string(s.SubRunes(l, r))
 		if word == "" {
 			break
 		}
@@ -38,17 +39,26 @@ func TestNextWord(t *testing.T) {
 	}{
 		{1, "(", []string{"("}},
 		{2, ")", []string{")"}},
-		{3, "()", []string{"(", ")"}},
+		// number (integer)
 		{4, "1", []string{"1"}},
 		{5, "12", []string{"12"}},
 		{6, "123", []string{"123"}},
-		{10, "(+ 1 2)", []string{"(", "+", "1", "2", ")"}},
-		{11, "(+ 10 234 (- 56 7) (* 8 9))",
+		// empty list
+		{10, "()", []string{"()"}},
+		{11, "( )", []string{"( )"}},
+		// boolean
+		{20, "#t", []string{"#t"}},
+		{21, "#f", []string{"#f"}},
+		{22, "#true", []string{"#true"}},
+		{23, "#false", []string{"#false"}},
+		// list
+		{100, "(+ 1 2)", []string{"(", "+", "1", "2", ")"}},
+		{101, "(+ 10 234 (- 56 7) (* 8 9))",
 			[]string{"(", "+", "10", "234", "(", "-", "56", "7", ")", "(", "*", "8", "9", ")", ")"}},
 	}
 
 	for _, tc := range tests {
-		s := NewWordScanner(tc.testcase)
+		s := NewWordScanner([]rune(tc.testcase))
 		if s == nil {
 			t.Fatalf("tests[%d] - fail to instantiate a scanner for \"%s\"",
 				tc.id, tc.testcase)

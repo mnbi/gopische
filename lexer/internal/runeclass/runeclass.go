@@ -30,6 +30,9 @@ func IsWhitespace(r rune) bool {
 	return unicode.IsSpace(r)
 }
 
+// Extended identifier characters, see 2.1 in R7RS (or R5RS).
+var extendedIdChars = [...]rune{'!', '$', '%', '&', '*', '+', '-', '.', '/', ':', '<', '=', '>', '?', '@', '^', '_', '~'}
+
 var digits = [...]rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 
 func IsDigit(r rune) (found bool) {

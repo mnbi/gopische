@@ -1,7 +1,7 @@
 PACKAGE_NAME := $(shell go list .)
 PROGRAM_NAME := $(notdir $(PACKAGE_NAME))
 
-CURRENT_VERSION := $(shell git describe --tags --abbrev=0)
+CURRENT_VERSION := $(shell git describe --tags --abbrev=0 | tr -d v)
 CURRENT_REVISION := $(shell git rev-parse --short HEAD)
 BUILD_LDFLAGS := " \
 	-s -w \
@@ -13,6 +13,7 @@ BUILD_LDFLAGS := " \
 test:
 	go test -v ./cmd/...
 	go test -v ./lexer/...
+	go test -v ./scheme/...
 	go test -v ./token/...
 	go test -v ./
 

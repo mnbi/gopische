@@ -4,32 +4,40 @@ package token
 
 import (
 	"fmt"
+
+	"github.com/mnbi/gopische/scheme"
 )
 
 type TokenType string
 
 const (
-	LPAREN  = "LPAREN"
-	RPAREN  = "RPAREN"
-	QUOTE   = "QUOTE"
-	NUMBER  = "NUMBER"
-	SYMBOL  = "SYMBOL"
-	STRING  = "STRING"
-	ILLEGAL = "ILLEGAL"
+	LPAREN     = "LPAREN"
+	RPAREN     = "RPAREN"
+	QUOTE      = "QUOTE"
+	NUMBER     = "NUMBER"
+	SYMBOL     = "SYMBOL"
+	STRING     = "STRING"
+	EMPTY_LIST = "EMPTY_LIST"
+	BOOLEAN    = "BOOLEAN"
+	ILLEGAL    = "ILLEGAL"
 )
 
 type Token struct {
 	TokenType TokenType
 	Literal   string
+	Value     scheme.Object
 }
 
-func NewToken(t TokenType, l string) (tk Token, err error) {
-	tk = Token{TokenType: t, Literal: l}
-	return
+func NewIllegalToken(lit string) *Token {
+	return NewToken(ILLEGAL, lit, scheme.EmptyList)
+}
+
+func NewToken(tt TokenType, lit string, val scheme.Object) *Token {
+	return &Token{TokenType: tt, Literal: lit, Value: val}
 }
 
 // Stringer interface for Token. The main purpose is to print token
 // content in debugging.
 func (t *Token) String() string {
-	return fmt.Sprintf("[%s (%s)]", t.TokenType, t.Literal)
+	return fmt.Sprintf("[type:%s, literal:%s, value:%s]", t.TokenType, t.Literal, t.Value)
 }

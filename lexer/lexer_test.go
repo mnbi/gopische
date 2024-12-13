@@ -8,7 +8,7 @@ import (
 	"github.com/mnbi/gopische/token"
 )
 
-func TestTokenType(t *testing.T) {
+func TestCreateToken(t *testing.T) {
 	tests := []struct {
 		id           int
 		testcase     string
@@ -20,8 +20,8 @@ func TestTokenType(t *testing.T) {
 		{4, "car", token.SYMBOL},
 		{5, "1", token.NUMBER},
 		{6, "23", token.NUMBER},
+		{7, "-4567", token.NUMBER},
 		/*
-			{7, "-4567", token.NUMBER},
 			{8, "3.14", token.NUMBER},
 			{9, "2.71828182845904523", token.NUMBER},
 			{10, "1/2", token.NUMBER},
@@ -31,13 +31,23 @@ func TestTokenType(t *testing.T) {
 		{13, "\"Go\"", token.STRING}, // qouted string
 		{14, "\"Scheme is a programming language.\"", token.STRING},
 		{15, "++", token.SYMBOL},
+		{16, "()", token.EMPTY_LIST},
+		{17, "#t", token.BOOLEAN},
+		{18, "#f", token.BOOLEAN},
+		{19, "#true", token.BOOLEAN},
+		{20, "#false", token.BOOLEAN},
 	}
 
 	for _, tc := range tests {
-		tt := tokenType(tc.testcase)
-		if tt != tc.expectedType {
+		l := NewLexer(tc.testcase)
+		tk, err := l.createToken(0, len([]rune(tc.testcase)))
+		if err != nil {
+			t.Fatalf("tests[%d] - fail to create a token for %s\n", tc.id, tc.testcase)
+		}
+
+		if tk.TokenType != tc.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong, expected=%q, got=%q",
-				tc.id, tc.expectedType, tt)
+				tc.id, tc.expectedType, tk.TokenType)
 		}
 	}
 }
