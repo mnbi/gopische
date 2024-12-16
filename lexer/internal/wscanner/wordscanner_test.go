@@ -51,6 +51,9 @@ func TestNextWord(t *testing.T) {
 		{21, "#f", []string{"#f"}},
 		{22, "#true", []string{"#true"}},
 		{23, "#false", []string{"#false"}},
+		// string
+		{30, "\"hoge\"", []string{"\"hoge\""}},
+		{31, `"hoge\"fuga"`, []string{`"hoge\"fuga"`}},
 		// list
 		{100, "(+ 1 2)", []string{"(", "+", "1", "2", ")"}},
 		{101, "(+ 10 234 (- 56 7) (* 8 9))",

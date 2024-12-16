@@ -196,32 +196,21 @@ func NewSchemeObject(tag Tag, value any) (Object, error) {
 
 	switch tag {
 	case NIL:
-		ok = true
-		sobj = EmptyList
+		sobj, ok = newNil(value) // newNil will never fail.
 	case BOOLEAN:
-		var bv bool
-		if bv, ok = value.(bool); ok {
-			sobj = &Boolean{value: bv}
-		} else {
+		if sobj, ok = newBoolean(value); !ok {
 			emsg = fmt.Sprintf("illegal boolean value, %v", value)
 		}
 	case STRING:
-		var str string
-		if str, ok = value.(string); ok {
-			sobj = &String{value: str}
-		} else {
+		if sobj, ok = newString(value); !ok {
 			emsg = fmt.Sprintf("illegal string value, %v", value)
 		}
 	case SYMBOL:
-		var sym string
-		if sym, ok = value.(string); ok {
-			sobj = &Symbol{value: sym}
-		} else {
+		if sobj, ok = newSymbol(value); !ok {
 			emsg = fmt.Sprintf("illegal symbol value, %v", value)
 		}
 	case NUMBER:
-		sobj, ok = newNumber(value)
-		if !ok {
+		if sobj, ok = newNumber(value); !ok {
 			emsg = fmt.Sprintf("illegal number value, %v", value)
 		}
 	default:
@@ -234,6 +223,36 @@ func NewSchemeObject(tag Tag, value any) (Object, error) {
 	}
 
 	return sobj, nil
+}
+
+func newNil(v any) (Object, bool) {
+	return EmptyList, true
+}
+
+func newBoolean(v any) (sobj Object, ok bool) {
+	var bv bool
+	if bv, ok = v.(bool); ok {
+		sobj = &Boolean{value: bv}
+	}
+	return
+}
+
+func newString(v any) (sobj Object, ok bool) {
+	var raw, cooked string
+	if raw, ok = v.(string); ok {
+		if cooked, ok = unescapeGoStr(raw); ok {
+			sobj = &String{value: cooked}
+		}
+	}
+	return
+}
+
+func newSymbol(v any) (sobj Object, ok bool) {
+	var sym string
+	if sym, ok = v.(string); ok {
+		sobj = &Symbol{value: sym}
+	}
+	return
 }
 
 func newNumber(v any) (sobj Object, ok bool) {
@@ -281,4 +300,34 @@ func newNumber(v any) (sobj Object, ok bool) {
 		sobj, ok = &Nil{}, false
 	}
 	return
+}
+
+func unescapeGoStr(raw string) (string, bool) {
+	length := len(raw)
+
+	if length < 1 {
+		return "", false
+	}
+
+	result := make([]byte, 0, length)
+
+	var ch byte
+	for i := 0; i < length; i++ {
+		ch = raw[i]
+		if ch == 0x5c { // '\'
+			if i < length-1 {
+				switch raw[i+1] {
+				case 0x22: // '"'
+					i++
+				default:
+					// nothing to do
+				}
+				ch = raw[i]
+			} else {
+				return "", false
+			}
+		}
+		result = append(result, ch)
+	}
+	return string(result), true
 }

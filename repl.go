@@ -2,12 +2,13 @@ package gopische
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/mnbi/gopische/lexer"
+	"github.com/mnbi/gopische/scheme"
 	"github.com/mnbi/gopische/token"
 )
 
@@ -37,8 +38,8 @@ func Repl() int {
 
 	welcome(writer)
 
-	var exp string
-	var ok bool
+	var sexp scheme.Object
+	var err error
 
 	for {
 		prompt(writer)
@@ -47,11 +48,11 @@ func Repl() int {
 			break
 		}
 		firstLine := scanner.Text()
-		if exp, ok = read(firstLine); !ok {
+		if sexp, err = read(firstLine); err != nil {
+			log.Print(err)
 			continue
 		}
-
-		print(writer, eval(exp))
+		print(writer, eval(sexp))
 	}
 
 	farewell(writer)
@@ -59,35 +60,40 @@ func Repl() int {
 	return 0
 }
 
-func read(input string) (string, bool) {
+func read(input string) (sexp scheme.Object, err error) {
 	l := lexer.NewLexer(input)
 	if l == nil {
-		log.Printf("fail to analyze lexically: \"%s\"", input)
-		return "", false
+		emsg := fmt.Sprintf("fail to analyze lexically: \"%s\"", input)
+		return scheme.EmptyList, errors.New(emsg)
 	}
-	return parse(l), true
+	sexp, err = parse(l)
+	return
 }
 
-func eval(exp string) string {
-	return exp
+func eval(sexp scheme.Object) scheme.Object {
+	return sexp
 }
 
-func print(writer *bufio.Writer, value string) {
-	answerLine := fmt.Sprintf("%s\n", value)
+func print(writer *bufio.Writer, value scheme.Object) {
+	answerLine := fmt.Sprintf("%s\n", value.String())
 	writeString(writer, answerLine)
 }
 
-func parse(l *lexer.Lexer) string {
-	var ok bool
-	var tk *token.Token
-
-	tokenStrings := make([]string, 0, l.Length())
-	for {
-		if tk, ok = l.NextToken(); !ok { // no more tokens
-			break
+func parse(l *lexer.Lexer) (sexp scheme.Object, err error) {
+	for tk, ok := l.NextToken(); ok; tk, ok = l.NextToken() {
+		switch tk.TokenType {
+		case token.NUMBER:
+			sexp = tk.Value
+		case token.STRING:
+			sexp = tk.Value
+		case token.EMPTY_LIST:
+			sexp = tk.Value
+		case token.BOOLEAN:
+			sexp = tk.Value
+		default:
+			emsg := fmt.Sprintf("fail to parse: %s", tk)
+			err = errors.New(emsg)
 		}
-		tokenStrings = append(tokenStrings, tk.String())
 	}
-
-	return strings.Join(tokenStrings, ",\n")
+	return
 }

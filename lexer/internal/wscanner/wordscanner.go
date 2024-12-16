@@ -95,7 +95,7 @@ Loop:
 			rightPos = ws.Cursor()
 			return
 		case Accept:
-			if c != runeclass.EOS {
+			if c != runeclass.EOS && c != runeclass.DOUBLE_QUOT {
 				ws.Unread(1)
 			}
 			rightPos = ws.Cursor()
